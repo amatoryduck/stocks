@@ -98,10 +98,7 @@ if __name__=="__main__":
     for tag in Tickers:
         try:
             print("Working on : {}".format(tag))
-            data = pdr.get_data_yahoo("SPY", start="2017-01-01", end="2017-04-30")
+            data = pdr.get_data_yahoo(tag, start=start, end=end)
             print(data)
-            #ticker = yf.Ticker(tag)
         except:
             continue
-        
-        
