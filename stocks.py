@@ -8,6 +8,7 @@ import time
 import unicodedata
 import psycopg2
 import datetime
+import matplotlib.pyplot as plt
 from pandas_datareader import data as pdr
 from bs4 import BeautifulSoup
 
@@ -15,10 +16,6 @@ class Stock():
     
     def __init__(self, name):
         self.name = name
-
-def setup_DB():
-    con = psycopg2.connect(database="postgres", user="postgres", password="postgres", host="127.0.0.1", port="5432")
-    print("Database opened successfully")   
 
 def get_Dow():
     Dow_Website = requests.get("https://money.cnn.com/data/dow30/")
@@ -66,9 +63,10 @@ def get_SP():
 if __name__=="__main__":
     parser = argparse.ArgumentParser("stocks")
     parser.add_argument("-d", "--dow", help="Select the Dow Jones as your selected stocks", default=False, action="store_true")
-    parser.add_argument("-p", "--sp", help="Select the Dow Jones as your selected stocks", default=False, action="store_true")
+    parser.add_argument("-p", "--sp", help="Select the S&P500 as your selected stocks", default=False, action="store_true")
     parser.add_argument("-e", "--end", help="End date in YYYY-MM-DD format", required=True)
     parser.add_argument("-s", "--start", help="Start date in YYYY-MM-DD format", required=True)
+    parser.add_argument("-i", "--init", help="Initial investment for the bot", required=True)
     args = parser.parse_args()
 
     try:
@@ -94,11 +92,25 @@ if __name__=="__main__":
     if args.sp:
         Tickers = Tickers.union(set(get_SP()))
 
+    stock_data = dict()
     
     for tag in Tickers:
         try:
             print("Working on : {}".format(tag))
             data = pdr.get_data_yahoo(tag, start=start, end=end)
-            print(data)
+            stock_data[tag] = data
         except:
             continue
+
+    test = dict()
+    days = list()
+    for i in range((end - (start)).days):
+        day = start + datetime.timedelta(days=i)
+        days.append(str(day))
+        try:
+            test[day] = stock_data["AAPL"].loc[day, "High"]
+        except:
+            continue
+
+    plt.plot_date(test.keys(), test.values(), 'b-')
+    plt.show()
