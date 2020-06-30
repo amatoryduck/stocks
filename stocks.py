@@ -6,12 +6,19 @@ import argparse
 import requests
 import time
 import unicodedata
+import psycopg2
+import datetime
+from pandas_datareader import data as pdr
 from bs4 import BeautifulSoup
 
 class Stock():
     
     def __init__(self, name):
         self.name = name
+
+def setup_DB():
+    con = psycopg2.connect(database="postgres", user="postgres", password="postgres", host="127.0.0.1", port="5432")
+    print("Database opened successfully")   
 
 def get_Dow():
     Dow_Website = requests.get("https://money.cnn.com/data/dow30/")
@@ -59,8 +66,22 @@ def get_SP():
 if __name__=="__main__":
     parser = argparse.ArgumentParser("stocks")
     parser.add_argument("-d", "--dow", help="Select the Dow Jones as your selected stocks", default=False, action="store_true")
-    parser.add_argument("-s", "--sp", help="Select the Dow Jones as your selected stocks", default=False, action="store_true")
+    parser.add_argument("-p", "--sp", help="Select the Dow Jones as your selected stocks", default=False, action="store_true")
+    parser.add_argument("-e", "--end", help="End date in YYYY-MM-DD format", required=True)
+    parser.add_argument("-s", "--start", help="Start date in YYYY-MM-DD format", required=True)
     args = parser.parse_args()
+
+    try:
+        start = datetime.datetime.strptime(args.start, "%Y-%m-%d")
+    except:
+        raise Exception("Start date must be in YYYY-MM-DD format")
+
+    try:
+        end = datetime.datetime.strptime(args.end, "%Y-%m-%d")
+    except:
+        raise Exception("End date must be in YYYY-MM-DD format")
+
+    print("{} {}".format(start, end))
 
     if args.dow == False and args.sp == False:
         raise Exception("You need to select a market")
@@ -73,10 +94,14 @@ if __name__=="__main__":
     if args.sp:
         Tickers = Tickers.union(set(get_SP()))
 
+    
     for tag in Tickers:
         try:
             print("Working on : {}".format(tag))
-            ticker = yf.Ticker(tag)
+            data = pdr.get_data_yahoo("SPY", start="2017-01-01", end="2017-04-30")
+            print(data)
+            #ticker = yf.Ticker(tag)
         except:
             continue
+        
         
