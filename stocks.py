@@ -9,6 +9,7 @@ import unicodedata
 import psycopg2
 import datetime
 import matplotlib.pyplot as plt
+import random
 from pandas_datareader import data as pdr
 from bs4 import BeautifulSoup
 
@@ -102,15 +103,22 @@ if __name__=="__main__":
         except:
             continue
 
-    test = dict()
-    days = list()
-    for i in range((end - (start)).days):
-        day = start + datetime.timedelta(days=i)
-        days.append(str(day))
-        try:
-            test[day] = stock_data["AAPL"].loc[day, "High"]
-        except:
-            continue
+    all_stocks = list()
+    d = dict()
+    legends = list()
+    for i in Tickers:
+        for j in range((end - (start)).days):
+            day = start + datetime.timedelta(days=j)
+            try:
+                d[day] = stock_data[i].loc[day, "High"]
+            except:
+                continue
+        color = (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1))
+        plot = plt.plot_date(d.keys(), d.values(), 'b-', label=i, c=color)
 
-    plt.plot_date(test.keys(), test.values(), 'b-')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     plt.show()
+
+"""for i in stock_data.keys():
+        for index, row in stock_data[i].iterrows():
+            print("INDEX: {}, ROW: {}, NAME: {}".format(index, row, i))"""
