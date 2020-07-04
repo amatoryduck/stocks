@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-import yfinance as yf
 import os
+import sys
+import yfinance as yf
 import argparse
 import requests
 import time
 import unicodedata
-import psycopg2
+#import psycopg2
 import datetime
 import matplotlib.pyplot as plt
 import random
@@ -110,23 +111,27 @@ if __name__=="__main__":
             data = pdr.get_data_yahoo(tag, start=start, end=end)
             stock_data[tag] = data
         except:
+            print('error: continuing')
             continue
 
     all_stocks = list()
     legends = list()
     stocks_class = list()
     for day in range((end - (start)).days):
-        
+        dayKey = (start + datetime.timedelta(days=day))
+        print(f'Calculating average % change for {dayKey}')
         mu = 0
         for tag in Tickers:
             try:
-                opn = stock_data[tag].loc[day, "Open"]
-                close = stock_data[tag].loc[day, "Close"]
+                opn = stock_data[tag].loc[dayKey, "Open"]
+                close = stock_data[tag].loc[dayKey, "Close"]
                 mu = mu + ((close-opn)/opn)
             except:
+                print(f'error calculating average % change for {day} at tag {tag}')
                 continue
 
         mu = mu / len(Tickers)
+        print(f'average % change for {day} is {mu}')
 
         for tag in Tickers:
             curr_day = start + datetime.timedelta(days=day)
